@@ -43,8 +43,7 @@ router.get('/:id', (req, res) => {
 // create new product
 router.post('/', (req, res) => {
   const { product_name, price, stock, tagIds } = req.body;
-  Product.create(req.body)
-    .then((product) => {
+  Product.create({
         product_name,
         price,
         stock,
