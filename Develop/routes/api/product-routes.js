@@ -43,29 +43,35 @@ router.get('/:id', (req, res) => {
 // create new product
 router.post('/', (req, res) => {
   const { product_name, price, stock, tagIds } = req.body;
+
+  // Create the product with specified attributes
   Product.create({
-        product_name,
-        price,
-        stock,
-    })
-      // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (req.body.tagIds.length) {
-        const productTagIdArr = req.body.tagIds.map((tag_id) => {
+    product_name,
+    price,
+    stock,
+  })
+    .then((product) => {
+      // Check if there are product tags to associate
+      if (tagIds && tagIds.length) {
+        const productTagIdArr = tagIds.map((tag_id) => {
           return {
             product_id: product.id,
             tag_id,
           };
         });
-        return ProductTag.bulkCreate(productTagIdArr);
+        return ProductTag.bulkCreate(productTagIdArr)
+          .then((productTagIds) => {
+            res.status(200).json({ product, productTagIds });
+          });
+      } else {
+        res.status(200).json(product);
       }
-      // if no product tags, just respond
-      res.status(200).json(product);
     })
-    .then((productTagIds) => res.status(200).json(productTagIds))
     .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
+      console.error(err);
+      res.status(400).json({error: 'Failed to create a new product' });
     });
+});
 
 
 // update product
